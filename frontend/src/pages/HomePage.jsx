@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import api from "../api/apiClient";
 import Navbar from "../components/Navbar";
 import PostCard from "../components/PostCard";
@@ -100,11 +99,6 @@ export default function HomePage() {
             <SidebarRight creators={creators} />
           </section>
         </main>
-        <p className="empty-note" style={{ textAlign: "center", marginTop: 16 }}>
-          <Link to="/create/outfit">Create an outfit</Link>
-          {" · "}
-          <Link to="/login">Login</Link>
-        </p>
       </div>
     </div>
   );

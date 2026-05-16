@@ -19,10 +19,26 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+
+def api_root(_request):
+    return JsonResponse(
+        {
+            "message": "NepStyle backend is running.",
+            "admin": "/admin/",
+            "auth": "/api/auth/",
+            "outfits": "/api/outfits/",
+            "reels": "/api/reels/",
+            "feed": "/api/feed/",
+            "recommendations": "/api/recommendations/",
+        }
+    )
+
 urlpatterns = [
+    path("", api_root),
     path("admin/", admin.site.urls),
     path("api/auth/", include("accounts.urls")),
     path("api/auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),

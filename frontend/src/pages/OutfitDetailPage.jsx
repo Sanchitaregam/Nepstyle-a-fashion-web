@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import api from "../api/apiClient";
 import { useAuth } from "../auth/AuthContext";
+import CommentList from "../components/CommentList";
+import "../components/fashion-home.css";
 
 export default function OutfitDetailPage() {
   const { id } = useParams();
@@ -14,6 +16,7 @@ export default function OutfitDetailPage() {
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [posting, setPosting] = useState(false);
 
   const likeToggleEnabled = useMemo(() => isAuthenticated, [isAuthenticated]);
 
@@ -33,12 +36,11 @@ export default function OutfitDetailPage() {
           setLiked(!!likedRes.data.liked);
         }
 
-        // Track a view when user opens the detail page.
         await api.post(`/api/outfits/${id}/view/`);
 
         const commentsRes = await api.get(`/api/outfits/${id}/comments/`);
         if (cancelled) return;
-        setComments(commentsRes.data);
+        setComments(commentsRes.data || []);
       } catch (e) {
         if (!cancelled) setError(e?.response?.data?.detail || e.message || "Failed to load outfit");
       } finally {
@@ -71,70 +73,105 @@ export default function OutfitDetailPage() {
     const text = newComment.trim();
     if (!text) return;
 
-    const res = await api.post(`/api/outfits/${id}/comments/`, { text });
-    setComments((prev) => [...prev, res.data]);
-    setNewComment("");
+    setPosting(true);
+    try {
+      const res = await api.post(`/api/outfits/${id}/comments/`, { text });
+      setComments((prev) => [...prev, res.data]);
+      setNewComment("");
+    } finally {
+      setPosting(false);
+    }
   }
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div style={{ color: "red" }}>{error}</div>;
-  if (!outfit) return <div>Not found</div>;
+  if (loading) {
+    return (
+      <div className="fashion-app">
+        <div className="fashion-container">
+          <p className="empty-note">Loading outfit…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="fashion-app">
+        <div className="fashion-container">
+          <p className="auth-error">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!outfit) {
+    return (
+      <div className="fashion-app">
+        <div className="fashion-container">
+          <p className="empty-note">Outfit not found.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <div style={{ padding: 16, textAlign: "left" }}>
-        <Link to="/">← Back</Link>
-      </div>
+    <div className="fashion-app">
+      <div className="fashion-container outfit-detail-wrap">
+        <Link to="/" className="outfit-detail-back">
+          ← Back to feed
+        </Link>
 
-      <div style={{ maxWidth: 1000, margin: "0 auto", padding: 16, textAlign: "left" }}>
-        {outfit.image_url ? (
-          <img src={outfit.image_url} alt={outfit.caption || "Outfit"} style={{ width: "100%", maxHeight: 520, objectFit: "cover", borderRadius: 12 }} />
-        ) : null}
-        <h2 style={{ marginTop: 12 }}>{outfit.author?.username}</h2>
-        {outfit.caption ? <p>{outfit.caption}</p> : null}
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <button
-            type="button"
-            onClick={toggleLike}
-            style={{
-              cursor: likeToggleEnabled ? "pointer" : "not-allowed",
-              padding: "10px 14px",
-              borderRadius: 999,
-              border: "1px solid rgba(170, 59, 255, 0.5)",
-              background: liked ? "rgba(170, 59, 255, 0.15)" : "transparent",
-            }}
-          >
-            {liked ? "Liked" : "Like"} ({outfit.like_count})
-          </button>
-          <div style={{ color: "#6b6375" }}>Views: {outfit.view_count}</div>
-        </div>
+        <article className="card outfit-detail-card">
+          {outfit.image_url ? (
+            <img src={outfit.image_url} alt={outfit.caption || "Outfit"} className="outfit-detail-image" />
+          ) : null}
 
-        <h3 style={{ marginTop: 24 }}>Comments</h3>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {(comments || []).map((c) => (
-            <div key={c.id} style={{ border: "1px solid #e5e4e7", borderRadius: 10, padding: 10 }}>
-              <div style={{ fontWeight: 600 }}>{c.author?.username}</div>
-              <div>{c.text}</div>
-              <div style={{ color: "#6b6375", fontSize: 13 }}>{new Date(c.created_at).toLocaleString()}</div>
+          <header className="post-header outfit-detail-head">
+            <div className="avatar-sm avatar-placeholder" aria-hidden>
+              {(outfit.author?.username || "?").slice(0, 1).toUpperCase()}
             </div>
-          ))}
-        </div>
+            <div>
+              <h2 className="outfit-detail-username">
+                <Link to={`/u/${outfit.author?.username || ""}`} className="brand-link">
+                  @{outfit.author?.username}
+                </Link>
+              </h2>
+              {outfit.caption ? <p className="post-caption">{outfit.caption}</p> : null}
+            </div>
+          </header>
 
-        <form onSubmit={submitComment} style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 10 }}>
-          <textarea
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            placeholder={isAuthenticated ? "Write a comment..." : "Login to comment"}
-            rows={3}
-            disabled={!isAuthenticated}
-          />
-          <button type="submit" disabled={!isAuthenticated}>
-            Post Comment
-          </button>
-        </form>
+          <div className="post-actions-bar outfit-detail-actions">
+            <button
+              type="button"
+              className={`post-action-btn ${liked ? "is-liked" : ""}`}
+              onClick={toggleLike}
+              disabled={!likeToggleEnabled}
+            >
+              {liked ? "Liked" : "Like"} ({outfit.like_count ?? 0})
+            </button>
+            <span className="outfit-detail-views">Views: {outfit.view_count ?? 0}</span>
+          </div>
+
+          <section className="outfit-detail-comments">
+            <h3>Comments</h3>
+            <CommentList comments={comments} emptyText="No comments yet." />
+
+            <form className="comments-compose outfit-detail-compose" onSubmit={submitComment}>
+              <input
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder={isAuthenticated ? "Add a comment…" : "Login to comment"}
+                disabled={!isAuthenticated}
+                maxLength={500}
+                aria-label="Write a comment"
+              />
+              <button type="submit" className="comments-post-btn" disabled={!isAuthenticated || posting || !newComment.trim()}>
+                {posting ? "Posting…" : "Post"}
+              </button>
+            </form>
+          </section>
+        </article>
       </div>
     </div>
   );
 }
-

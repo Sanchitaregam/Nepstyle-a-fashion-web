@@ -1,5 +1,9 @@
+import { useEffect, useMemo, useState } from "react";
 import { Heart, MessageCircle, Share2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import api from "../api/apiClient";
+import { useAuth } from "../auth/AuthContext";
+import FeedCommentsModal from "./FeedCommentsModal";
 import "./fashion-home.css";
 
 function timeAgo(iso) {
@@ -13,6 +17,71 @@ function timeAgo(iso) {
 }
 
 export default function PostCard({ outfits = [] }) {
+  const { isAuthenticated } = useAuth();
+  const [feedOutfits, setFeedOutfits] = useState(outfits);
+  const [likedMap, setLikedMap] = useState({});
+  const [commentsOpenFor, setCommentsOpenFor] = useState(null);
+
+  useEffect(() => {
+    setFeedOutfits(outfits);
+  }, [outfits]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadLikeStatuses() {
+      if (!isAuthenticated || !outfits.length) {
+        if (!cancelled) setLikedMap({});
+        return;
+      }
+      try {
+        const entries = await Promise.all(
+          outfits.map(async (outfit) => {
+            const res = await api.get(`/api/outfits/${outfit.id}/like-status/`);
+            return [outfit.id, !!res.data?.liked];
+          })
+        );
+        if (!cancelled) {
+          setLikedMap(Object.fromEntries(entries));
+        }
+      } catch {
+        if (!cancelled) setLikedMap({});
+      }
+    }
+
+    loadLikeStatuses();
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, outfits]);
+
+  const activeOutfits = useMemo(() => feedOutfits || [], [feedOutfits]);
+
+  async function onToggleLike(outfitId) {
+    if (!isAuthenticated) return;
+    try {
+      const res = await api.post(`/api/outfits/${outfitId}/like/`);
+      const liked = !!res.data?.liked;
+      const likeCount = Number(res.data?.like_count ?? 0);
+      setLikedMap((prev) => ({ ...prev, [outfitId]: liked }));
+      setFeedOutfits((prev) =>
+        prev.map((item) => (item.id === outfitId ? { ...item, like_count: likeCount } : item))
+      );
+    } catch {
+      // no-op: keep current UI state if request fails
+    }
+  }
+
+  function onOpenComments(outfitId) {
+    setCommentsOpenFor(outfitId);
+  }
+
+  function onCommentCountChange(outfitId, count) {
+    setFeedOutfits((prev) =>
+      prev.map((item) => (item.id === outfitId ? { ...item, comment_count: count } : item))
+    );
+  }
+
   if (!outfits.length) {
     return (
       <section className="card">
@@ -26,7 +95,7 @@ export default function PostCard({ outfits = [] }) {
     <section className="card">
       <h2 className="section-title">Latest Outfits</h2>
 
-      {outfits.map((outfit) => (
+      {activeOutfits.map((outfit) => (
         <article className="post-card" key={outfit.id}>
           <header className="post-header">
             <div className="avatar-sm avatar-placeholder" aria-hidden>
@@ -54,19 +123,42 @@ export default function PostCard({ outfits = [] }) {
             </Link>
           </div>
 
-          <footer className="post-actions">
-            <div>
-              <Heart size={18} /> <span>{outfit.like_count ?? 0}</span>
+          <footer className="post-actions-bar">
+            <div className="post-actions-group" aria-label="Post interactions">
+              <button
+                type="button"
+                className={`post-action-btn ${likedMap[outfit.id] ? "is-liked" : ""}`}
+                onClick={() => onToggleLike(outfit.id)}
+                aria-label={likedMap[outfit.id] ? "Unlike post" : "Like post"}
+                title={isAuthenticated ? "Like" : "Login required to like"}
+              >
+                <Heart size={17} strokeWidth={2} fill={likedMap[outfit.id] ? "currentColor" : "none"} />
+                <span className="post-action-count">{outfit.like_count ?? 0}</span>
+              </button>
+              <button
+                type="button"
+                className="post-action-btn"
+                onClick={() => onOpenComments(outfit.id)}
+                aria-label="Open comments"
+              >
+                <MessageCircle size={17} strokeWidth={2} />
+                <span className="post-action-count">{outfit.comment_count ?? 0}</span>
+              </button>
             </div>
-            <div>
-              <MessageCircle size={18} /> <span>{outfit.comment_count ?? 0}</span>
-            </div>
-            <Link to={`/outfits/${outfit.id}`} className="post-share-link">
-              <Share2 size={17} /> View
+            <Link to={`/outfits/${outfit.id}`} className="post-action-view">
+              <Share2 size={15} strokeWidth={2} />
+              <span>View</span>
             </Link>
           </footer>
         </article>
       ))}
+
+      <FeedCommentsModal
+        outfitId={commentsOpenFor}
+        open={Boolean(commentsOpenFor)}
+        onClose={() => setCommentsOpenFor(null)}
+        onCountChange={(count) => onCommentCountChange(commentsOpenFor, count)}
+      />
     </section>
   );
 }

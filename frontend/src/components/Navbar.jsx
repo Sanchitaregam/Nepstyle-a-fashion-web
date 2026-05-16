@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Bell, Mail, Search, User, MessageCircle } from "lucide-react";
+import { Bell, Mail, Plus, Search, User, MessageCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import "./fashion-home.css";
@@ -60,6 +60,9 @@ export default function Navbar() {
       </div>
 
       <div className="nav-actions">
+        <Link to="/create/outfit" className="icon-btn icon-btn-create" aria-label="Create outfit" title="Create outfit">
+          <Plus size={20} strokeWidth={2.5} />
+        </Link>
         <div className="nav-dropdown-wrap" ref={messagesRef}>
           <button
             type="button"
