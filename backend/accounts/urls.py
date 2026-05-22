@@ -10,12 +10,14 @@ from .views import (
     ProfileReelsView,
     ProfileView,
     RegisterView,
+    UserSearchView,
 )
 
 urlpatterns = [
     path("register/", RegisterView.as_view(), name="register"),
     path("me/", MeView.as_view(), name="me"),
     path("me/edit/", EditMyProfileView.as_view(), name="edit-me"),
+    path("users/", UserSearchView.as_view(), name="users"),
     path("profiles/<str:username>/", ProfileView.as_view(), name="profile"),
     path("profiles/<str:username>/followers/", ProfileFollowersView.as_view(), name="profile-followers"),
     path("profiles/<str:username>/following/", ProfileFollowingView.as_view(), name="profile-following"),

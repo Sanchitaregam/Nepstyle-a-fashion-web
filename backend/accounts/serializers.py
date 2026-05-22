@@ -169,3 +169,30 @@ class EditProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = ["avatar", "username", "bio", "location", "website"]
 
+
+class UserSearchSerializer(serializers.ModelSerializer):
+    """Serializer for user search results."""
+    avatar_url = serializers.SerializerMethodField()
+    full_name = serializers.SerializerMethodField()
+    is_following = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "avatar_url", "full_name", "is_following"]
+
+    def get_avatar_url(self, obj):
+        request = self.context.get("request")
+        if not getattr(obj, "avatar", None) or not obj.avatar:
+            return None
+        url = obj.avatar.url
+        return request.build_absolute_uri(url) if request else url
+
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}".strip()
+
+    def get_is_following(self, obj):
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        return Follow.objects.filter(follower=request.user, following=obj).exists()
+

@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { MessageCircle, Share2 } from "lucide-react";
 import api from "../api/apiClient";
 import { useAuth } from "../auth/AuthContext";
+import { startConversationWithUsername } from "../chatActions";
 import Navbar from "../components/Navbar";
 import "../components/fashion-home.css";
 
@@ -264,7 +265,7 @@ export default function ProfilePage() {
                   <button type="button" className="mini-btn" onClick={() => onToggleFollowTarget(profile.username)}>
                     {profile.is_following ? "Unfollow" : "Follow"}
                   </button>
-                  <button type="button" className="mini-btn"><MessageCircle size={16} /> Message</button>
+                  <button type="button" className="mini-btn" onClick={() => startConversationWithUsername(profile.username, navigate)}><MessageCircle size={16} /> Message</button>
                   <button type="button" className="mini-btn" onClick={shareProfile}><Share2 size={16} /> Share Profile</button>
                 </>
               )}
