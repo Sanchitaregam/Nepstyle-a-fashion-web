@@ -7,6 +7,7 @@ import LoginFormPage from "./pages/LoginFormPage";
 import OutfitDetailPage from "./pages/OutfitDetailPage";
 import ProfilePage from "./pages/ProfilePage";
 import RegisterPage from "./pages/RegisterPage";
+import SearchPage from "./pages/SearchPage";
 import "./App.css";
 
 export default function App() {
@@ -15,6 +16,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/search" element={<SearchPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/login/form" element={<LoginFormPage />} />
           <Route path="/register" element={<RegisterPage />} />

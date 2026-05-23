@@ -33,6 +33,7 @@ def api_root(_request):
             "outfits": "/api/outfits/",
             "reels": "/api/reels/",
             "feed": "/api/feed/",
+            "search": "/api/feed/search/?q=your+query",
             "recommendations": "/api/recommendations/",
         }
     )

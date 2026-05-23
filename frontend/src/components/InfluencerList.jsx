@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import "./fashion-home.css";
 
 export default function InfluencerList({ creators = [] }) {
@@ -8,13 +9,15 @@ export default function InfluencerList({ creators = [] }) {
         <ul className="influencer-list">
           {creators.map((c) => (
             <li key={c.id}>
-              <div className="avatar-sm avatar-placeholder" aria-hidden>
-                {(c.username || "?").slice(0, 1).toUpperCase()}
-              </div>
-              <div>
-                <strong>{c.username}</strong>
-                <span>{c.total_likes ?? 0} total likes on outfits</span>
-              </div>
+              <Link to={`/u/${c.username}`} className="influencer-list-link">
+                <div className="avatar-sm avatar-placeholder" aria-hidden>
+                  {(c.username || "?").slice(0, 1).toUpperCase()}
+                </div>
+                <div>
+                  <strong>@{c.username}</strong>
+                  <span>{c.total_likes ?? 0} total likes on outfits</span>
+                </div>
+              </Link>
             </li>
           ))}
         </ul>

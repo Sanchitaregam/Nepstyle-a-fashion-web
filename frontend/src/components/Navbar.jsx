@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { Bell, Mail, Plus, Search, User, MessageCircle } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import "./fashion-home.css";
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, isAuthenticated, doLogout } = useAuth();
   const [open, setOpen] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const messagesRef = useRef(null);
   const notificationsRef = useRef(null);
@@ -29,6 +31,20 @@ export default function Navbar() {
     document.addEventListener("mousedown", handlePointerDown);
     return () => document.removeEventListener("mousedown", handlePointerDown);
   }, [open]);
+
+  useEffect(() => {
+    if (location.pathname === "/search") {
+      const q = new URLSearchParams(location.search).get("q") || "";
+      setSearchQuery(q);
+    }
+  }, [location.pathname, location.search]);
+
+  function onSearchSubmit(e) {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    if (!q) return;
+    navigate(`/search?q=${encodeURIComponent(q)}`);
+  }
 
   function toggle(panel) {
     setOpen((o) => (o === panel ? null : panel));
@@ -54,10 +70,16 @@ export default function Navbar() {
         <span className="brand-text">NepStyle</span>
       </Link>
 
-      <div className="search-wrap">
-        <Search size={18} />
-        <input placeholder="Search..." readOnly aria-label="Search" />
-      </div>
+      <form className="search-wrap" role="search" onSubmit={onSearchSubmit}>
+        <Search size={18} aria-hidden />
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search outfits, tags, creators…"
+          aria-label="Search outfits"
+        />
+      </form>
 
       <div className="nav-actions">
         <Link to="/create/outfit" className="icon-btn icon-btn-create" aria-label="Create outfit" title="Create outfit">

@@ -136,6 +136,45 @@
   background: transparent;
   width: 100%;
   font-size: 14px;
+  font-family: inherit;
+  color: #111827;
+}
+
+.search-wrap input::placeholder {
+  color: #94a3b8;
+}
+
+.search-wrap input::-webkit-search-cancel-button {
+  cursor: pointer;
+}
+
+.section-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.section-title-row .section-title {
+  margin-bottom: 0;
+}
+
+.section-title-meta {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.search-page-main {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.search-status {
+  text-align: center;
+  padding: 20px 8px;
 }
 
 .nav-actions {
@@ -612,9 +651,28 @@
 }
 
 .influencer-list li {
+  margin: 0;
+}
+
+.influencer-list-link {
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 8px 10px;
+  margin: -8px -10px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+
+.influencer-list-link:hover {
+  background: #f3f4f6;
+}
+
+.influencer-list-link:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
 }
 
 .influencer-list strong {

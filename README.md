@@ -96,36 +96,50 @@ Recommendations:
 
 ## Ranking / Recommendation Logic (Report-Ready)
 
-### 1) Trending Score (Home)
-For each outfit/reel, we compute:
+Implementation lives in `backend/recommendations/scoring.py`.
 
-`score = (likes*ALPHA + comments*BETA + views*GAMMA) / (hours_since_published + 2)^DELTA`
+### Slide 13 — Trending score
 
-Constants (current implementation):
-- `ALPHA = 1.0` (likes weight)
-- `BETA = 2.0` (comments weight)
-- `GAMMA = 1.0` (views weight)
-- `DELTA = 1.5` (time decay)
+For each outfit or reel:
 
-Trending lists are computed by:
-1. Taking the most recent ~200 items
-2. Computing the score in application code
-3. Sorting by score desc and returning top N
+**Trending Score = (Likes × 3) + (Comments × 5) + (Views × 1)**
 
-### 2) “For You” Recommendations
-For a logged-in user:
-1. Extract **top liked tags** from outfits they liked.
-2. Build candidates as:
-   - **recent popular** outfits (highest like/view counters)
-   - plus outfits matching those top tags
-3. For each candidate compute:
-   - `engagement_score` using the same time-decayed formula as Trending
-   - `final_score = engagement_score + tag_match_count * TAG_MATCH_BONUS`
+Trending lists (`GET /api/feed/home/`):
+1. Optionally filter by period: `period=daily` | `weekly` | `monthly` (default: `weekly`)
+2. Score each post with the formula above
+3. Sort by `trending_score` descending and return top N
 
-Constants:
-- `TAG_MATCH_BONUS = 5.0`
+Response fields include `trending_period` and `trending_formula` for documentation/UI.
 
-The API returns the top `limit` outfits ordered by `final_score`.
+### Rule-based recommendations (initial phase)
+
+`GET /api/recommendations/for-you/` (JWT required) combines:
+
+| Rule | Description |
+|------|-------------|
+| **Similar tags** | Posts that share tags with outfits you **liked** |
+| **Preferred categories** | Posts in tags you engage with often (tags from **likes + views**; tags act as style categories) |
+| **Trending outfits** | High trending score within the selected period |
+| **User likes & views** | Extra boost when tags match your like/view history |
+
+**Note:** “Saves” are not stored yet; **likes** and **views** are used as preference signals.
+
+**Recommendation score** (per candidate):
+
+```
+recommendation_score =
+  (trending_score × 1.0)
+  + (similar_tag_matches × 5.0)
+  + (preferred_category_matches × 4.0)
+  + (liked_tag_matches × 6.0)
+  + (viewed_tag_matches × 2.0)
+```
+
+Query params:
+- `limit` — number of results (default 10)
+- `period` — `daily` | `weekly` | `monthly` for trending window (default `weekly`)
+
+The API returns `for_you_outfits` sorted by `recommendation_score`, plus a `rules` object describing the logic (suitable for reports/slides).
 
 ## Deployment Notes (Render/Fly/Railway)
 1. Use managed PostgreSQL and set `DATABASE_URL`.

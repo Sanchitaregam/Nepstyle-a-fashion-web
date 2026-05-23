@@ -16,7 +16,12 @@ function timeAgo(iso) {
   return d.toLocaleDateString();
 }
 
-export default function PostCard({ outfits = [] }) {
+export default function PostCard({
+  outfits = [],
+  title = "Latest Outfits",
+  emptyMessage = "No outfits posted yet.",
+  showCount = false,
+}) {
   const { isAuthenticated } = useAuth();
   const [feedOutfits, setFeedOutfits] = useState(outfits);
   const [likedMap, setLikedMap] = useState({});
@@ -85,15 +90,18 @@ export default function PostCard({ outfits = [] }) {
   if (!outfits.length) {
     return (
       <section className="card">
-        <h2 className="section-title">Latest Outfits</h2>
-        <p className="empty-note">No outfits posted yet.</p>
+        <h2 className="section-title">{title}</h2>
+        <p className="empty-note">{emptyMessage}</p>
       </section>
     );
   }
 
   return (
     <section className="card">
-      <h2 className="section-title">Latest Outfits</h2>
+      <div className="section-title-row">
+        <h2 className="section-title">{title}</h2>
+        {showCount ? <span className="section-title-meta">{outfits.length} found</span> : null}
+      </div>
 
       {activeOutfits.map((outfit) => (
         <article className="post-card" key={outfit.id}>
