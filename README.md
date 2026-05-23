@@ -15,16 +15,22 @@ Built with:
 ## Local Setup
 
 ### 1) Backend
-1. Create/activate a Python environment (the repo includes `backend/.venv`):
+1. Go to the backend folder:
    - `cd backend`
-2. Install dependencies:
-   - `pip install Django djangorestframework djangorestframework-simplejwt django-cors-headers django-filter Pillow psycopg2-binary dj-database-url gunicorn`
-3. Environment variables:
+2. Create a virtual environment (stored in `backend/.venv`, not committed to git):
+   - `python3 -m venv .venv`
+3. Activate it:
+   - macOS/Linux: `source .venv/bin/activate`
+   - Windows (cmd): `.venv\Scripts\activate.bat`
+   - Windows (PowerShell): `.venv\Scripts\Activate.ps1`
+4. Install dependencies:
+   - `pip install -r requirements.txt`
+5. Environment variables:
    - `DJANGO_SECRET_KEY` (required for production; optional locally)
    - `DEBUG` (set to `false` for production)
    - `DATABASE_URL` (optional; if not set, SQLite is used)
 
-4. Migrate + run:
+6. Migrate + run (with the venv still activated):
    - `python manage.py makemigrations`
    - `python manage.py migrate`
    - `python manage.py runserver`
@@ -41,8 +47,9 @@ Media uploads are served from `/media/` in development.
    - `npm run dev`
 
 ### 3) Testing
-Run backend tests:
+Run backend tests (activate `backend/.venv` first):
 - `cd backend`
+- `source .venv/bin/activate`  # skip if already active
 - `python manage.py test`
 
 ## Troubleshooting: "Given token not valid for any token type"
