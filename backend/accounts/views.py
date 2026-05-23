@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -17,8 +17,10 @@ from .serializers import (
     ProfileOutfitSerializer,
     ProfileReelSerializer,
     ProfileSummarySerializer,
+    PublicUserSerializer,
     RegisterSerializer,
     UserMeSerializer,
+    UserSearchSerializer,
 )
 
 User = get_user_model()
@@ -138,3 +140,47 @@ class EditMyProfileView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(UserMeSerializer(request.user, context={"request": request}).data)
+
+
+class UserSearchView(APIView):
+    """
+    Search for users by username.
+    
+    Query params:
+    - search: username substring to search for (case-insensitive)
+    - limit: max results (default 10)
+    - followed_only: if True and user is authenticated, return only followed users
+    
+    Returns list of users with id, username, avatar_url, full_name, is_following
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        search = request.query_params.get("search", "").strip()
+        limit = int(request.query_params.get("limit", 10))
+        followed_only = request.query_params.get("followed_only", "false").lower() == "true"
+        
+        # Build base queryset
+        queryset = User.objects.all()
+        
+        # Filter by search term if provided
+        if search:
+            queryset = queryset.filter(
+                Q(username__icontains=search) | Q(first_name__icontains=search)
+            )
+        
+        # If followed_only and user is authenticated, return only followed users
+        if followed_only and request.user.is_authenticated:
+            queryset = queryset.filter(follower_relations__follower=request.user)
+        
+        # Exclude current user if authenticated
+        if request.user.is_authenticated:
+            queryset = queryset.exclude(id=request.user.id)
+        
+        # Limit results and order by username
+        queryset = queryset.order_by("username")[:limit]
+        
+        serializer = UserSearchSerializer(
+            queryset, many=True, context={"request": request}
+        )
+        return Response(serializer.data)

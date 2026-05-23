@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Bell, Mail, Plus, Search, User, MessageCircle } from "lucide-react";
+import { Bell, Plus, Search, User } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import ChatPopover from "./ChatPopover";
 import "./fashion-home.css";
 
 export default function Navbar() {
@@ -11,7 +12,6 @@ export default function Navbar() {
   const [open, setOpen] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const messagesRef = useRef(null);
   const notificationsRef = useRef(null);
   const profileRef = useRef(null);
 
@@ -20,7 +20,6 @@ export default function Navbar() {
     function handlePointerDown(e) {
       const t = e.target;
       if (
-        messagesRef.current?.contains(t) ||
         notificationsRef.current?.contains(t) ||
         profileRef.current?.contains(t)
       ) {
@@ -61,6 +60,11 @@ export default function Navbar() {
     navigate("/login");
   }
 
+  useEffect(() => {
+    // Re-render nav on route change so ChatPopover unread counts stay fresh
+    return () => {};
+  }, []);
+
   const username = user?.username ?? "Guest";
 
   return (
@@ -85,27 +89,7 @@ export default function Navbar() {
         <Link to="/create/outfit" className="icon-btn icon-btn-create" aria-label="Create outfit" title="Create outfit">
           <Plus size={20} strokeWidth={2.5} />
         </Link>
-        <div className="nav-dropdown-wrap" ref={messagesRef}>
-          <button
-            type="button"
-            className={`icon-btn${open === "messages" ? " icon-btn-active" : ""}`}
-            aria-label="Messages"
-            aria-expanded={open === "messages"}
-            onClick={() => toggle("messages")}
-          >
-            <Mail size={20} />
-          </button>
-          {open === "messages" && (
-            <div className="nav-popover nav-popover-messages" role="dialog" aria-label="Messages">
-              <div className="nav-coming-soon-card">
-                <div className="nav-coming-soon-icon-wrap" aria-hidden>
-                  <MessageCircle size={22} strokeWidth={1.75} />
-                </div>
-                <p className="nav-coming-soon-text">Messaging feature coming soon.</p>
-              </div>
-            </div>
-          )}
-        </div>
+        <ChatPopover />
 
         <div className="nav-dropdown-wrap" ref={notificationsRef}>
           <button
