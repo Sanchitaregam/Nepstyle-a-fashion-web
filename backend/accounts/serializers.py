@@ -165,9 +165,22 @@ class ProfileReelSerializer(serializers.ModelSerializer):
 
 
 class EditProfileSerializer(serializers.ModelSerializer):
+    avatar = serializers.ImageField(required=False, allow_null=True)
+
     class Meta:
         model = User
         fields = ["avatar", "username", "bio", "location", "website"]
+
+    def update(self, instance, validated_data):
+        # If avatar is explicitly set to null, remove file and clear the field.
+        if "avatar" in validated_data and validated_data["avatar"] is None and instance.avatar:
+            instance.avatar.delete(save=False)
+
+        # If a new avatar is uploaded, clean up old file first.
+        if "avatar" in validated_data and validated_data["avatar"] is not None and instance.avatar:
+            instance.avatar.delete(save=False)
+
+        return super().update(instance, validated_data)
 
 
 class UserSearchSerializer(serializers.ModelSerializer):

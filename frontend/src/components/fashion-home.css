@@ -828,6 +828,11 @@
   gap: 6px;
 }
 
+.danger-btn {
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
 .tabs {
   display: flex;
   gap: 10px;

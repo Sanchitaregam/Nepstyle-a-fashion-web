@@ -35,7 +35,7 @@ function FollowersModal({ title, users, open, onClose, onToggleFollow, currentUs
   );
 }
 
-function PostPreviewModal({ open, onClose, item, type, comments }) {
+function PostPreviewModal({ open, onClose, item, type, comments, canDelete, onDelete, deleting }) {
   if (!open || !item) return null;
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -56,6 +56,13 @@ function PostPreviewModal({ open, onClose, item, type, comments }) {
           <div>❤️ {item.like_count ?? 0}</div>
           <div>💬 {item.comment_count ?? 0}</div>
         </div>
+        {canDelete ? (
+          <div className="profile-actions" style={{ marginTop: 8 }}>
+            <button type="button" className="mini-btn danger-btn" onClick={onDelete} disabled={deleting}>
+              {deleting ? "Deleting..." : "Delete this post"}
+            </button>
+          </div>
+        ) : null}
         {type === "photo" ? (
           <div className="comment-block">
             <h4>Comments</h4>
@@ -151,6 +158,7 @@ export default function ProfilePage() {
   const [shareMsg, setShareMsg] = useState("");
   const [preview, setPreview] = useState(null);
   const [comments, setComments] = useState([]);
+  const [deletingPost, setDeletingPost] = useState(false);
 
   const isOwn = useMemo(() => Boolean(profile?.is_own_profile), [profile]);
 
@@ -223,6 +231,26 @@ export default function ProfilePage() {
     setTimeout(() => setShareMsg(""), 1500);
   }
 
+  async function deleteCurrentPost() {
+    if (!isOwn || !preview?.item?.id || deletingPost) return;
+    const shouldDelete = window.confirm("Delete this post?");
+    if (!shouldDelete) return;
+
+    setDeletingPost(true);
+    try {
+      if (preview.type === "photo") {
+        await api.delete(`/api/outfits/${preview.item.id}/`);
+        setPhotos((prev) => prev.filter((p) => p.id !== preview.item.id));
+      } else {
+        await api.delete(`/api/reels/${preview.item.id}/`);
+        setVideos((prev) => prev.filter((v) => v.id !== preview.item.id));
+      }
+      setPreview(null);
+    } finally {
+      setDeletingPost(false);
+    }
+  }
+
   if (!profile) {
     return (
       <div className="fashion-app">
@@ -241,7 +269,9 @@ export default function ProfilePage() {
       <div className="fashion-container">
         <Navbar />
         <section className="card profile-header">
-          {profile.avatar_url ? <img src={profile.avatar_url} alt="" className="profile-avatar-xl" /> : <div className="profile-avatar-xl avatar-placeholder">{profile.username?.slice(0, 1)?.toUpperCase()}</div>}
+          {profile.avatar_url ? <img src={profile.avatar_url} alt="" className="profile-avatar-xl" /> : (
+            <div className="profile-avatar-xl avatar-placeholder">{profile.username?.slice(0, 1)?.toUpperCase()}</div>
+          )}
           <div className="profile-main">
             <h2 className="profile-username">@{profile.username}</h2>
             {profile.bio ? <p className="empty-note">{profile.bio}</p> : null}
@@ -337,6 +367,9 @@ export default function ProfilePage() {
           item={preview?.item}
           type={preview?.type}
           comments={comments}
+          canDelete={isOwn}
+          onDelete={deleteCurrentPost}
+          deleting={deletingPost}
         />
       </div>
     </div>
