@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { Bell, Plus, Search, User } from "lucide-react";
+import { Plus, Search, User } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import ChatPopover from "./ChatPopover";
+import NotificationsPopover from "./NotificationsPopover";
 import "./fashion-home.css";
 
 export default function Navbar() {
@@ -12,17 +13,13 @@ export default function Navbar() {
   const [open, setOpen] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const notificationsRef = useRef(null);
   const profileRef = useRef(null);
 
   useEffect(() => {
     if (!open) return;
     function handlePointerDown(e) {
       const t = e.target;
-      if (
-        notificationsRef.current?.contains(t) ||
-        profileRef.current?.contains(t)
-      ) {
+      if (profileRef.current?.contains(t)) {
         return;
       }
       setOpen(null);
@@ -90,29 +87,7 @@ export default function Navbar() {
           <Plus size={20} strokeWidth={2.5} />
         </Link>
         <ChatPopover />
-
-        <div className="nav-dropdown-wrap" ref={notificationsRef}>
-          <button
-            type="button"
-            className={`icon-btn icon-bell${open === "notifications" ? " icon-btn-active" : ""}`}
-            aria-label="Notifications"
-            aria-expanded={open === "notifications"}
-            onClick={() => toggle("notifications")}
-          >
-            <Bell size={20} />
-            <span className="notif-badge">3</span>
-          </button>
-          {open === "notifications" && (
-            <div className="nav-popover nav-popover-notifications" role="dialog" aria-label="Notifications">
-              <div className="nav-notifications-inner">
-                <Bell size={28} strokeWidth={1.5} className="nav-notifications-bell" aria-hidden />
-                <p className="nav-coming-soon-text nav-notifications-copy">
-                  Notifications feature coming soon.
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
+        <NotificationsPopover />
 
         <div className="nav-dropdown-wrap" ref={profileRef}>
           <button

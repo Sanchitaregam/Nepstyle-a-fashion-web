@@ -36,6 +36,7 @@ def api_root(_request):
             "search": "/api/feed/search/?q=your+query",
             "recommendations": "/api/recommendations/",
             "chat": "/api/chat/",
+            "notifications": "/api/notifications/",
         }
     )
 
@@ -52,6 +53,7 @@ urlpatterns = [
     path("api/", include("comments.urls")),
     path("api/recommendations/", include("recommendations.urls")),
     path("api/chat/", include("chat.urls")),
+    path("api/notifications/", include("notifications.urls")),
 ]
 
 # Development helper for serving uploaded media.

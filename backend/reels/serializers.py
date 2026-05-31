@@ -2,6 +2,8 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from typing import Optional
 
+from notifications.services import notify_reel_post
+
 from .models import Reel
 from recommendations.models import Tag
 
@@ -51,6 +53,7 @@ class ReelManageSerializer(serializers.ModelSerializer):
         reel = super().create(validated_data)
         if tags_raw is not None:
             self._set_tags(reel, tags_raw)
+        notify_reel_post(reel)
         return reel
 
     def _set_tags(self, reel: Reel, tags_raw: str):

@@ -3,6 +3,8 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from typing import Optional
 
+from notifications.services import notify_outfit_post
+
 from .models import OutfitPost
 from recommendations.models import Tag
 
@@ -52,6 +54,7 @@ class OutfitPostCreateSerializer(serializers.ModelSerializer):
         post = super().create(validated_data)
         if tags_raw is not None:
             self._set_tags(post, tags_raw)
+        notify_outfit_post(post)
         return post
 
     def _set_tags(self, post: OutfitPost, tags_raw: str):

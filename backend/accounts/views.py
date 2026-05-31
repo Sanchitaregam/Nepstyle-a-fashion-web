@@ -10,6 +10,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from outfits.models import OutfitPost
 from reels.models import Reel
 
+from notifications.services import notify_follow
+
 from .models import Follow
 from .serializers import (
     EditProfileSerializer,
@@ -108,6 +110,7 @@ class ProfileFollowToggleView(APIView):
             following = False
         else:
             Follow.objects.create(follower=request.user, following=target)
+            notify_follow(follower=request.user, following_user=target)
             following = True
         return Response({"following": following})
 
