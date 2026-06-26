@@ -14,6 +14,27 @@ class User(AbstractUser):
     website = models.URLField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Subscription tiers: free | silver | gold | business
+    subscription_tier = models.CharField(max_length=20, default="free")
+    subscription_expires_at = models.DateTimeField(null=True, blank=True)
+    is_verified = models.BooleanField(default=False)
+    is_featured = models.BooleanField(default=False)
+    shop_url = models.URLField(blank=True, default="")
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["subscription_tier"]),
+            models.Index(fields=["is_featured"]),
+        ]
+
+    @property
+    def is_premium(self) -> bool:
+        return self.subscription_tier in ("silver", "gold", "business")
+
+    @property
+    def is_ad_free(self) -> bool:
+        return self.is_premium
+
     def __str__(self) -> str:
         return self.username
 
@@ -42,3 +63,26 @@ class Follow(models.Model):
 
     def __str__(self) -> str:
         return f"{self.follower_id}->{self.following_id}"
+
+
+class ProfileViewEvent(models.Model):
+    """Tracks profile views for premium analytics (Gold+)."""
+
+    profile = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="profile_view_events",
+    )
+    viewer = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="profiles_viewed",
+    )
+    viewed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["profile", "viewed_at"]),
+        ]

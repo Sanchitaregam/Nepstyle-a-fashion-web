@@ -11,3 +11,4 @@ psycopg2-binary==2.9.11
 dj-database-url==3.0.1
 gunicorn==23.0.0
 Faker==37.4.0
+requests==2.32.3

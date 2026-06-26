@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "recommendations",
     "chat",
     "notifications",
+    "payments",
 ]
 
 MIDDLEWARE = [
@@ -175,3 +176,16 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
 }
+
+# eSewa sandbox (test) credentials — override via env in production.
+ESEWA_MERCHANT_CODE = os.environ.get("ESEWA_MERCHANT_CODE", "EPAYTEST")
+ESEWA_SECRET_KEY = os.environ.get("ESEWA_SECRET_KEY", "8gBm/:&EnhH.1/q")
+ESEWA_PAYMENT_URL = os.environ.get(
+    "ESEWA_PAYMENT_URL",
+    "https://rc-epay.esewa.com.np/api/epay/main/v2/form",
+)
+ESEWA_STATUS_URL = os.environ.get(
+    "ESEWA_STATUS_URL",
+    "https://rc-epay.esewa.com.np/api/epay/transaction/status/",
+)
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
