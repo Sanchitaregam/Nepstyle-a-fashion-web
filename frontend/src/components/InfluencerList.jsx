@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import VerifiedBadge from "./VerifiedBadge";
 import "./fashion-home.css";
 
 export default function InfluencerList({ creators = [] }) {
@@ -14,7 +15,11 @@ export default function InfluencerList({ creators = [] }) {
                   {(c.username || "?").slice(0, 1).toUpperCase()}
                 </div>
                 <div>
-                  <strong>@{c.username}</strong>
+                  <strong>
+                    @{c.username}
+                    {c.is_verified ? <VerifiedBadge /> : null}
+                    {c.is_featured ? <span className="featured-badge">Featured</span> : null}
+                  </strong>
                   <span>{c.total_likes ?? 0} total likes on outfits</span>
                 </div>
               </Link>

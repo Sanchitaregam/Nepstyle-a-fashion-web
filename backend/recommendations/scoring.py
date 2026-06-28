@@ -25,6 +25,29 @@ WEIGHT_USER_LIKED_TAG = 6.0
 WEIGHT_USER_VIEWED_TAG = 2.0
 
 
+def compute_feed_score(
+    *,
+    created_at,
+    like_count: int,
+    comment_count: int,
+    view_count: int,
+    is_boosted: bool,
+) -> float:
+    """
+    Home feed ranking:
+    Final Score = (Recency × 0.4) + (Engagement × 0.3) + (Boost × 0.3)
+    """
+    now = timezone.now()
+    age_hours = max(0.0, (now - created_at).total_seconds() / 3600)
+    recency = max(0.0, 1.0 - age_hours / (24 * 7))
+    engagement = min(
+        1.0,
+        (like_count * 3 + comment_count * 5 + view_count) / 100.0,
+    )
+    boost = 1.0 if is_boosted else 0.0
+    return recency * 0.4 + engagement * 0.3 + boost * 0.3
+
+
 def compute_trending_score(*, likes: int, comments: int, views: int) -> float:
     """Popular outfit score used for trending lists."""
     return (

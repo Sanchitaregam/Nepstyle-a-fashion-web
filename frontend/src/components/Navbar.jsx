@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Plus, Search, User } from "lucide-react";
+import { Plus, Search, User, LineChart } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import ChatPopover from "./ChatPopover";
@@ -86,6 +86,9 @@ export default function Navbar() {
         <Link to="/create/outfit" className="icon-btn icon-btn-create" aria-label="Create outfit" title="Create outfit">
           <Plus size={20} strokeWidth={2.5} />
         </Link>
+        <Link to="/subscription" className="nav-premium-link" title="Premium plans">
+          Premium
+        </Link>
         <ChatPopover />
         <NotificationsPopover />
 
@@ -121,6 +124,20 @@ export default function Navbar() {
               <button type="button" className="nav-profile-menu-item" role="menuitem" onClick={onViewProfile}>
                 View Profile
               </button>
+              {isAuthenticated && (
+                <Link
+                  to="/analytics"
+                  className="nav-profile-menu-item nav-profile-menu-link nav-profile-menu-analytics"
+                  role="menuitem"
+                  onClick={() => setOpen(null)}
+                >
+                  <LineChart size={16} />
+                  Premium Analytics
+                </Link>
+              )}
+              <Link to="/subscription" className="nav-profile-menu-item nav-profile-menu-link" role="menuitem" onClick={() => setOpen(null)}>
+                Premium Plans
+              </Link>
               {isAuthenticated && (
                 <button type="button" className="nav-profile-menu-item" role="menuitem" onClick={onLogout}>
                   Logout

@@ -37,6 +37,7 @@ def api_root(_request):
             "recommendations": "/api/recommendations/",
             "chat": "/api/chat/",
             "notifications": "/api/notifications/",
+            "payments": "/api/payments/",
         }
     )
 
@@ -54,6 +55,7 @@ urlpatterns = [
     path("api/recommendations/", include("recommendations.urls")),
     path("api/chat/", include("chat.urls")),
     path("api/notifications/", include("notifications.urls")),
+    path("api/payments/", include("payments.urls")),
 ]
 
 # Development helper for serving uploaded media.

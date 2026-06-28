@@ -5,6 +5,7 @@ import api from "../api/apiClient";
 import { useAuth } from "../auth/AuthContext";
 import { startConversationWithUsername } from "../chatActions";
 import Navbar from "../components/Navbar";
+import VerifiedBadge from "../components/VerifiedBadge";
 import "../components/fashion-home.css";
 
 function FollowersModal({ title, users, open, onClose, onToggleFollow, currentUsername }) {
@@ -273,7 +274,10 @@ export default function ProfilePage() {
             <div className="profile-avatar-xl avatar-placeholder">{profile.username?.slice(0, 1)?.toUpperCase()}</div>
           )}
           <div className="profile-main">
-            <h2 className="profile-username">@{profile.username}</h2>
+            <h2 className="profile-username">
+              @{profile.username}
+              {profile.is_verified ? <VerifiedBadge /> : null}
+            </h2>
             {profile.bio ? <p className="empty-note">{profile.bio}</p> : null}
             <div className="profile-meta">
               {profile.location ? <span>{profile.location}</span> : null}

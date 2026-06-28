@@ -22,12 +22,25 @@ class OutfitPost(models.Model):
         blank=True,
     )
 
+    is_boosted = models.BooleanField(default=False)
+    boost_expires_at = models.DateTimeField(null=True, blank=True)
+    shop_url = models.URLField(blank=True, default="")
+
     class Meta:
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["created_at"]),
             models.Index(fields=["author", "created_at"]),
+            models.Index(fields=["is_boosted", "boost_expires_at"]),
         ]
+
+    @property
+    def boost_active(self) -> bool:
+        if not self.is_boosted or not self.boost_expires_at:
+            return False
+        from django.utils import timezone
+
+        return self.boost_expires_at > timezone.now()
 
     def __str__(self) -> str:
         return f"OutfitPost({self.id}) by {self.author}"

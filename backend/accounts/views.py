@@ -12,7 +12,7 @@ from reels.models import Reel
 
 from notifications.services import notify_follow
 
-from .models import Follow
+from .models import Follow, ProfileViewEvent
 from .serializers import (
     EditProfileSerializer,
     FollowerListItemSerializer,
@@ -73,6 +73,8 @@ class ProfileView(APIView):
             username=username,
         )
         user.posts_count = int(getattr(user, "outfits_count", 0) + getattr(user, "reels_count", 0))
+        if request.user.is_authenticated and request.user.id != user.id:
+            ProfileViewEvent.objects.create(profile=user, viewer=request.user)
         serializer = ProfileSummarySerializer(user, context={"request": request})
         return Response(serializer.data)
 

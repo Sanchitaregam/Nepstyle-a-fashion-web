@@ -12,10 +12,26 @@ User = get_user_model()
 
 class UserMeSerializer(serializers.ModelSerializer):
     avatar_url = serializers.SerializerMethodField()
+    is_premium = serializers.BooleanField(read_only=True)
+    is_ad_free = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = User
-        fields = ["id", "username", "email", "avatar_url", "bio", "location", "website"]
+        fields = [
+            "id",
+            "username",
+            "email",
+            "avatar_url",
+            "bio",
+            "location",
+            "website",
+            "subscription_tier",
+            "subscription_expires_at",
+            "is_verified",
+            "is_premium",
+            "is_ad_free",
+            "shop_url",
+        ]
 
     def get_avatar_url(self, obj):
         request = self.context.get("request")
@@ -52,7 +68,7 @@ class PublicUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "username", "avatar_url"]
+        fields = ["id", "username", "avatar_url", "is_verified"]
 
     def get_avatar_url(self, obj):
         request = self.context.get("request")
@@ -84,6 +100,9 @@ class ProfileSummarySerializer(serializers.ModelSerializer):
             "following_count",
             "is_own_profile",
             "is_following",
+            "is_verified",
+            "subscription_tier",
+            "shop_url",
         ]
 
     def get_avatar_url(self, obj):
@@ -129,10 +148,11 @@ class FollowerListItemSerializer(serializers.ModelSerializer):
 class ProfileOutfitSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField()
+    is_boosted = serializers.SerializerMethodField()
 
     class Meta:
         model = OutfitPost
-        fields = ["id", "image_url", "caption", "created_at", "like_count", "comment_count"]
+        fields = ["id", "image_url", "caption", "created_at", "like_count", "comment_count", "is_boosted"]
 
     def get_image_url(self, obj):
         request = self.context.get("request")
@@ -143,6 +163,9 @@ class ProfileOutfitSerializer(serializers.ModelSerializer):
 
     def get_comment_count(self, obj):
         return Comment.objects.filter(outfit_post=obj).count()
+
+    def get_is_boosted(self, obj):
+        return obj.boost_active
 
 
 class ProfileReelSerializer(serializers.ModelSerializer):
@@ -169,7 +192,7 @@ class EditProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["avatar", "username", "bio", "location", "website"]
+        fields = ["avatar", "username", "bio", "location", "website", "shop_url"]
 
     def update(self, instance, validated_data):
         # If avatar is explicitly set to null, remove file and clear the field.

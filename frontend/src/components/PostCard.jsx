@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import api from "../api/apiClient";
 import { useAuth } from "../auth/AuthContext";
 import FeedCommentsModal from "./FeedCommentsModal";
+import VerifiedBadge from "./VerifiedBadge";
 import "./fashion-home.css";
 
 function timeAgo(iso) {
@@ -114,12 +115,20 @@ export default function PostCard({
                 <Link to={`/u/${outfit.author?.username || ""}`} className="brand-link">
                   {outfit.author?.username || "User"}
                 </Link>
+                {outfit.author?.is_verified ? <VerifiedBadge /> : null}
+                {outfit.is_boosted ? <span className="boost-badge">Boosted</span> : null}
               </h4>
               <span>{timeAgo(outfit.created_at)}</span>
             </div>
           </header>
 
           {outfit.caption ? <p className="post-caption">{outfit.caption}</p> : null}
+
+          {outfit.shop_url ? (
+            <a href={outfit.shop_url} className="shop-now-btn" target="_blank" rel="noopener noreferrer">
+              Shop Now
+            </a>
+          ) : null}
 
           <div className="post-images post-images-single">
             <Link to={`/outfits/${outfit.id}`}>
